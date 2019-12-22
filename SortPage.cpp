@@ -1,9 +1,9 @@
 #include "SortPage.h"
 #include "Drawing.h"
 #include "ValueWithFunction.h"
+#include <bitset>
 
 // ‘fˆö”•ª‰ğ
-inline std::vector<int> prime(int n);
 inline void initSettingPage();
 inline void drawChangingElementsCountButton(std::vector<int>& primes, int& size, int& cnt, const int& buttonHeight); 
 inline void upDateSettingPage();
@@ -61,16 +61,17 @@ inline void initSettingPage() {
 	Scene::SetBackground(ColorF(0.8, 0.9, 1.0));
 }
 
+inline std::vector<int> makeSize(int n);
 void upDateSettingPage() {
 	static const Font kFont(60);
 	static const int kButtonHeight = 40;
 	static const int kButtonWidth = 200;
 
-	static std::vector<int> primes = prime(Scene::Width());
-	static int size = 1;
+	static std::vector<int> sizes = makeSize(Scene::Width());
+	static int size = sizes[0];
 	static int cnt = 0;
 
-	drawChangingElementsCountButton(primes, size, cnt, kButtonHeight);
+	drawChangingElementsCountButton(sizes, size, cnt, kButtonHeight);
 
 	static int sleepTime = 1;
 	if (SimpleGUI::Button(U"‘Ò‚¿ŠÔ‚ğ1‘‚â‚·", Vec2(kButtonWidth, 0)) && sleepTime < 1000)++sleepTime;
@@ -95,21 +96,37 @@ void upDateSettingPage() {
 
 
 
-inline void drawChangingElementsCountButton(std::vector<int>& primes, int& size, int& cnt, const int& buttonHeight) {
+inline void drawChangingElementsCountButton(std::vector<int>& sizes, int& size, int& cnt, const int& buttonHeight) {
 	if (SimpleGUI::Button(U"—v‘f”‚ğ‘‚â‚·", Vec2(0, 0))) {
-		if (cnt < primes.size() - 1) {
-			size *= primes.at(cnt);
+		if (cnt < sizes.size() - 1) {
+			size = sizes.at(cnt);
 			cnt++;
 		}
 	}
 	if (SimpleGUI::Button(U"—v‘f”‚ğŒ¸‚ç‚·", Vec2(0, buttonHeight))) {
 		if (cnt > 0) {
 			--cnt;
-			size /= primes.at(cnt);
+			size = sizes.at(cnt);
 		}
 	}
 }
-
+inline std::vector<int> prime(int n);
+inline std::vector<int> makeSize(int n) {
+	using namespace std;
+	vector<int> a = prime(n);
+	vector<int> ans;
+	for (int i = 0; i < (1 << a.size()); ++i) {
+		bitset<10> bs(i);
+		int tmp = 1;
+		for (int j = 0; j < a.size();++j) {
+			if (bs[j])tmp *= a[j];
+		}
+		ans.push_back(tmp);
+	}
+	sort(ans.begin(), ans.end());
+	ans.erase(unique(ans.begin(), ans.end()), ans.end());
+	return ans;
+}
 inline std::vector<int> prime(int n) {
 	std::vector<int> primes;
 	for (int i = 2; n >= i * i; ++i) {
